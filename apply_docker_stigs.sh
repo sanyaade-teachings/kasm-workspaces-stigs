@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
-#set -x
+# set -x
+
+if [[ "$*" == *"--show-artifact"* ]]; then
+  SHOW_ARTIFACT=true
+else
+  SHOW_ARTIFACT=false
+fi
 
 ARCH=$(uname -m | sed 's/aarch64/arm64/g' | sed 's/x86_64/amd64/g')
 if [ "$ARCH" != "amd64" ] ; then
@@ -82,55 +88,111 @@ fi
 
 chown root:root $DOCKER_DAEMON_JSON_PATH
 log_succes "V-235867" "set daemon.json ownership to root:root"
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+   echo "Command: chown root:root $DOCKER_DAEMON_JSON_PATH"
+   echo "Output: $(chown root:root $DOCKER_DAEMON_JSON_PATH)"
+fi
 
 chmod 0644 $DOCKER_DAEMON_JSON_PATH
 log_succes "V-235868" "set daemon.json permissions to 644"
+if [ -n "$SHOW_ARTIFACT" ] ; then
+   echo "Command: chmod 0644 $DOCKER_DAEMON_JSON_PATH"
+   echo "Output: $(chmod 0644 $DOCKER_DAEMON_JSON_PATH)"
+fi
 
 chmod 0660 $DOCKER_SOCK_PATH
 log_succes "V-235866" "Set docker sock permission to 660"
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+   echo "Command: chmod 0660 $DOCKER_SOCK_PATH"
+   echo "Output: $(chmod 0660 $DOCKER_SOCK_PATH)"
+fi
 
 chown root:docker $DOCKER_SOCK_PATH
 log_succes "V-235865" "Set docker sock ownership to root:docker"
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+   echo "Command: chown root:docker $DOCKER_SOCK_PATH"
+   echo "Output: $(chown root:docker $DOCKER_SOCK_PATH)"
+fi
 
 if [ ! -f "$DOCKER_LEGACY_CONF" ] ; then
-    log_na 'V-235869' 'Legacy Docker configuration file not present.'
+  log_na 'V-235869' 'Legacy Docker configuration file not present.'
 	log_na "V-235870" "Legacy Docker configuration file not present."
 else
-	chown root:root $DOCKER_LEGACY_CONF
+  chown root:root $DOCKER_LEGACY_CONF
 	log_succes 'V-235869' 'Set ownership of legacy docker conf file to root:root.'
-	chmod 0644 $DOCKER_LEGACY_CONF
-	log_succes "V-235870" "Set $DEFAULT_DOCKER_PATH permissions to 644"
+  if [ ! -z "$SHOW_ARTIFACT" ] ; then
+     echo "Command: chown root:root $DOCKER_LEGACY_CONF"
+     echo "Output: $(chown root:root $DOCKER_LEGACY_CONF)"
+  fi
+  chmod 0644 $DOCKER_LEGACY_CONF
+  log_succes "V-235870" "Set $DEFAULT_DOCKER_PATH permissions to 644"
+  if [ ! -z "$SHOW_ARTIFACT" ] ; then
+     echo "Command: chmod 0644 $DOCKER_LEGACY_CONF"
+     echo "Output: $(chmod 0644 $DOCKER_LEGACY_CONF)"
+  fi
 fi
 
 chown root:root $ETC_DOCKER_PATH
 log_succes "V-235855" "Set $ETC_DOCKER_PATH ownership to root:root"
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+   echo "Command: chown root:root $ETC_DOCKER_PATH"
+   echo "Output: $(chown root:root $ETC_DOCKER_PATH)"
+fi
 
 chmod 755 $ETC_DOCKER_PATH
 log_succes "V-235856" "Set $ETC_DOCKER_PATH permissions to 755"
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+   echo "Command: chmod 755 $ETC_DOCKER_PATH"
+   echo "Output: $(chmod 755 $ETC_DOCKER_PATH)"
+fi
 
 chown root:root $DOCKER_SOCKET_PATH
 log_succes "V-235853" "Set docker.socket file ownership to root:root"
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+   echo "Command: chown root:root $DOCKER_SOCKET_PATH"
+   echo "Output: $(chown root:root $DOCKER_SOCKET_PATH)"
+fi
 
 chmod 0644 $DOCKER_SOCKET_PATH
 log_succes "V-235854" "Set docker.socket file permissions to 644"
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+   echo "Command: chmod 0644 $DOCKER_SOCKET_PATH"
+   echo "Output: $(chmod 0644 $DOCKER_SOCKET_PATH)"
+fi
 
 chown root:root $DOCKER_SERVICE_PATH
 log_succes "V-235851" "Set docker.service file ownership to root:root"
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+   echo "Command:chown root:root $DOCKER_SERVICE_PATH"
+   echo "Output: $(chown root:root $DOCKER_SERVICE_PATH)"
+fi
 
 chmod 0644 $DOCKER_SERVICE_PATH
 log_succes "V-235852" "Set docker.service file permissions to 0644"
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+   echo "Command: chmod 0644 $DOCKER_SERVICE_PATH"
+   echo "Output: $(chmod 0644 $DOCKER_SERVICE_PATH)"
+fi
 
 if docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: SecurityOpt={{ .HostConfig.SecurityOpt }}' 2>/dev/null | grep -i --quiet unconfined ; then
 	log_failure "V-235812" "found container with seccomp unconfined."
 else
 	log_succes "V-235812" "no seccomp unconfined containers found"
 fi
-
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: SecurityOpt={{ .HostConfig.SecurityOpt }}' 2>/dev/null | grep -i unconfined "
+  echo "Output: $(docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: SecurityOpt={{ .HostConfig.SecurityOpt }}' 2>/dev/null | grep -i unconfined)"
+fi
 
 if docker ps --quiet --all | xargs --no-run-if-empty -- docker inspect --format '{{ .Id }}: Ulimits={{ .HostConfig.Ulimits }}' 2>/dev/null | grep -v "no value" ; then
     log_failure "V-235844" "container overrides ulimit"
 else
 	log_succes "V-235844" "no containers override default ulimit"
+fi
+
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --quiet --all | xargs --no-run-if-empty -- docker inspect --format '{{ .Id }}: Ulimits={{ .HostConfig.Ulimits }}' 2>/dev/null | grep -v 'no value' "
+   echo "Output: $(docker ps --quiet --all | xargs --no-run-if-empty -- docker inspect --format '{{ .Id }}: Ulimits={{ .HostConfig.Ulimits }}' 2>/dev/null | grep -v 'no value')"
 fi
 
 # can be configured as docker daemon argument
@@ -139,11 +201,20 @@ if ps -ef | grep dockerd | grep --quiet 'insecure-registry'; then
 else
   log_succes "V-235789" "no insecure Registries configured."
 fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "ps -ef | grep dockerd | grep --quiet 'insecure-registry' : $(ps -ef | grep dockerd | grep --quiet 'insecure-registry')"
+fi
+
 # can be configured in daemon.json
 if grep --quiet 'insecure-registry' /etc/docker/daemon.json ; then
   log_failure "V-235789" "insecure Registries are configured."
 else
   log_succes "V-235789" "no insecure Registries configured."
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: grep --quiet 'insecure-registry' /etc/docker/daemon.json"
+  
+  echo "Output $(grep --quiet 'insecure-registry' /etc/docker/daemon.json)" 
 fi
 
 if docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: PidMode={{ .HostConfig.PidMode }}' 2>/dev/null | grep -i pidmode=host ; then
@@ -151,28 +222,49 @@ if docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker
 else
   log_succes 'V-235784' 'no containers running with host PID namespace detected'
 fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: PidMode={{ .HostConfig.PidMode }}' 2>/dev/null | grep -i pidmode=host"
+  
+   echo "Output: $(docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: PidMode={{ .HostConfig.PidMode }}' 2>/dev/null | grep -i pidmode=host)" 
+fi
 
 if docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: IpcMode={{ .HostConfig.IpcMode }}' 2>/dev/null | grep -i ipcmode=host ; then
   log_failure 'V-235785' 'containers present running with host IPC namespace'
 else
   log_succes 'V-235785' 'no containers running with host IPC namespace detected'
 fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: IpcMode={{ .HostConfig.IpcMode }}' 2>/dev/null | grep -i ipcmode=host"
+  
+   echo "Output: $(docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: IpcMode={{ .HostConfig.IpcMode }}' 2>/dev/null | grep -i ipcmode=host)" 
+fi
 
 # can be configured as docker daemon argument
 if ps -ef | grep dockerd | grep --quiet 'userland-proxy'; then
   log_failure "V-235791" "Remove userland-proxy flag from docker service arguments, use /etc/docker/daemon.json."
+else
+  log_succes "V-235791" "userland-proxy flag not used as docker service arguments."
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: ps -ef | grep dockerd | grep 'userland-proxy'"
+   echo "Output: $(ps -ef | grep dockerd | grep 'userland-proxy')" 
 fi
 # can be configured in daemon.json
 if grep --quiet -Pi '"userland-proxy"\s*:\s*false' /etc/docker/daemon.json ; then
   log_succes "V-235791" "userland-proxy is disabled."
 else
   if which jq ; then
-    cat <<< $(sudo jq '. |= . + {"userland-proxy": false}' /etc/docker/daemon.json) > /etc/docker/daemon.json
+      cat <<< $(sudo jq '. |= . + {"userland-proxy": false}' /etc/docker/daemon.json) > /etc/docker/daemon.json
     log_succes "V-235791" "userland-proxy has been disabled by this script, be sure to restart the docker service."
   else
     log_failure "V-235791" "userland-proxy is not explicitly disabled, unable to fix, jq package not installed."
-	echo "	TIP: add '\"userland-proxy\": false' to /etc/docker/daemon.json and restart the docker service"
+  echo "	TIP: add '\"userland-proxy\": false' to /etc/docker/daemon.json and restart the docker service"
   fi
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: grep -Pi '"userland-proxy"\s*:\s*false' /etc/docker/daemon.json"
+  
+   echo "Output: $(grep -Pi '"userland-proxy"\s*:\s*false' /etc/docker/daemon.json)" 
 fi
 
 if grep --quiet -Pi '"ip"\s*:\s*"[^0]' /etc/docker/daemon.json ; then
@@ -184,11 +276,15 @@ else
     else
       cat <<< $(sudo jq ". |= . + {\"ip\": \"$PRI_IP\"}" /etc/docker/daemon.json) > /etc/docker/daemon.json
       log_succes "V-235820" "docker has been bound to $PRI_IP, be sure to restart the docker service."
-	fi
+    fi
   else
     log_failure "V-235820" "docker is not configured to bind to specific interface, unable to fix, jq package not installed."
-	echo "	TIP: add '\"ip\": \"192.168.1.10\"' to /etc/docker/daemon.json, replace the IP address with the system's IP and restart the docker service"
+    echo "	TIP: add '\"ip\": \"192.168.1.10\"' to /etc/docker/daemon.json, replace the IP address with the system's IP and restart the docker service"
   fi
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+   echo "Command: grep -Pi '"ip"\s*:\s*"[^0]' /etc/docker/daemon.json"
+   echo "Output: $(grep -Pi '"ip"\s*:\s*"[^0]' /etc/docker/daemon.json)"
 fi
 
 if docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: AppArmorProfile={{ .AppArmorProfile }}' | grep -i "AppArmorProfile=unconfined" ; then
@@ -196,18 +292,36 @@ if docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: AppArmorP
 else
   log_succes 'V-235799' 'all containers running with apparmor profiles'
 fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: AppArmorProfile={{ .AppArmorProfile }}' | grep -i 'AppArmorProfile=unconfined'"
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: AppArmorProfile={{ .AppArmorProfile }}' | grep -i 'AppArmorProfile=unconfined')" 
+fi
 
-docker ps -q | xargs docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort
-log_manual 'V-235837' 'review above ports and ensure they are in the SSP, look at the HostPort field.'
+log_manual 'V-235837' 'review below ports and ensure they are in the SSP, look at the HostPort field.'
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps -q | xargs docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort "
+  echo "Output: $(docker ps -q | xargs docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort) " 
+else
+  docker ps -q | xargs docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort
+fi
 
-docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host"
+  echo "Output: $(docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host) " 
+else
+  docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host
+fi
 log_manual 'V-235804' 'review above ports and ensure they are in the SSP, look at the HostPort field.'
 
 if which ausearch ; then
-  if sudo ausearch -k docker | grep exec | grep --quiet privileged ; then
-    log_failure 'V-235813' 'there is an exec session running with privileged flag'
-  else
-    log_succes 'V-235813' 'no exec sessions with privilged flag found'
+    if sudo ausearch -k docker | grep exec | grep --quiet privileged ; then
+      log_failure 'V-235813' 'there is an exec session running with privileged flag'
+    else
+      log_succes 'V-235813' 'no exec sessions with privilged flag found'
+    if [ ! -z "$SHOW_ARTIFACT" ] ; then
+      echo "Command: sudo ausearch -k docker | grep exec | grep privileged "
+      echo "Output: $(sudo ausearch -k docker | grep exec | grep privileged)" 
+    fi
   fi
 else
   log_failure 'V-235813' 'ausearch package not installed not able to assess. This implies auditd is not installed.'
@@ -218,12 +332,20 @@ if docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UsernsMod
 else
   log_succes 'V-235817' 'no containers running sharing host user namespace detected'
 fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UsernsMode={{ .HostConfig.UsernsMode }}' | grep -i 'UsernsMode=host'"
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UsernsMode={{ .HostConfig.UsernsMode }}' | grep -i 'UsernsMode=host')" 
+fi
 
 LOW_HOST_PORT=$(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -Pio '(?<=HostPort:)\d+' | sort -n | head -n 1)
 if [ "$LOW_HOST_PORT" -lt 1024 ] ; then 
-    log_failure 'V-235819' 'host ports below 1024 are mapped into containers.'; 
+  log_failure 'V-235819' 'host ports below 1024 are mapped into containers.'; 
 else 
-	log_succes 'V-235819' 'no host ports mapped below 1024'; 
+  log_succes 'V-235819' 'no host ports mapped below 1024'; 
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -Pio '(?<=HostPort:)\d+' | sort -n | head -n 1 "
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -Pio '(?<=HostPort:)\d+' | sort -n | head -n 1) " 
 fi
 
 if docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: NetworkMode={{ .HostConfig.NetworkMode }}' 2>/dev/null | grep --quiet -i "NetworkMode=host" ; then
@@ -231,35 +353,61 @@ if docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker
 else
   log_succes 'V-235805' 'no containers running sharing hosts netork namespace'
 fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: NetworkMode={{ .HostConfig.NetworkMode }}' 2>/dev/null | grep --quiet -i 'NetworkMode=host'"
+  echo "Output: $(docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: NetworkMode={{ .HostConfig.NetworkMode }}' 2>/dev/null | grep --quiet -i 'NetworkMode=host') " 
+fi
+
 
 if docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Devices={{ .HostConfig.Devices }}' | grep --quiet -i 'pathincontainer' ; then
   log_failure 'V-235809' 'containers present with host devices passed in.'
 else
   log_succes 'V-235809' 'no containers running with host devices passed in.'
 fi 
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Devices={{ .HostConfig.Devices }}' | grep --quiet -i 'pathincontainer'"
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Devices={{ .HostConfig.Devices }}' | grep --quiet -i 'pathincontainer')" 
+fi
+
 
 if docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Volumes={{ .Mounts }}' | grep -iv "ucp\|kubelet\|dtr" | grep -Po 'Source:\S+' | grep -P '\:(/|/boot|/dev|/etc|/lib|/proc|/sys|/usr)$' ; then
   log_failure 'V-235783' 'sensitive directories mapped into containers detected.'
 else
   log_succes 'V-235783' 'no sensitive directories found mappend into containers'
 fi 
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Volumes={{ .Mounts }}' | grep -iv 'ucp\|kubelet\|dtr' | grep -Po 'Source:\S+' | grep -P '\:(/|/boot|/dev|/etc|/lib|/proc|/sys|/usr)$'"
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Volumes={{ .Mounts }}' | grep -iv 'ucp\|kubelet\|dtr' | grep -Po 'Source:\S+' | grep -P '\:(/|/boot|/dev|/etc|/lib|/proc|/sys|/usr)$')" 
+fi
 
 if docker info | grep --quiet -e "^Storage Driver:\s*aufs\s*$" ; then
   log_failure 'V-235790' 'aufs file system detected.'
 else
   log_succes 'V-235790' 'aufs file system not detected'
 fi 
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker info | grep --quiet -e '^Storage Driver:\s*aufs\s*$'"
+  echo "Output: $(docker info | grep --quiet -e \"^Storage Driver:\s*aufs\s*$\")"  
+fi
 
 if docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: Propagation={{range $mnt := .Mounts}} {{json $mnt.Propagation}} {{end}}' 2>/dev/null | grep --quiet 'shared' ; then
   log_failure 'V-235810' 'mount progagation mode set to shared.'
 else
   log_succes 'V-235810' 'no mounts set to shared propogation mode found'
 fi 
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: Propagation={{range $mnt := .Mounts}} {{json $mnt.Propagation}} {{end}}' 2>/dev/null | grep --quiet 'shared'"
+  echo "Output: $(docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: Propagation={{range $mnt := .Mounts}} {{json $mnt.Propagation}} {{end}}' 2>/dev/null | grep --quiet 'shared')" 
+fi
 
 if docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UTSMode={{ .HostConfig.UTSMode }}' | grep -i '=host' ; then
   log_failure 'V-235811' 'host UTS namespace shared to container.'
 else
   log_succes 'V-235811' 'no containers found with host UTC namespace shared'
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UTSMode={{ .HostConfig.UTSMode }}' | grep -i '=host'"
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UTSMode={{ .HostConfig.UTSMode }}' | grep -i '=host')" 
 fi
 
 if ps aux | grep 'docker exec' | grep '\-\-user' ; then
@@ -267,17 +415,30 @@ if ps aux | grep 'docker exec' | grep '\-\-user' ; then
 else
   log_succes 'V-235814' 'no exec sessions with user flag found'
 fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: ps aux | grep 'docker exec' | grep '\-\-user'"
+  echo "Output: $(ps aux | grep 'docker exec' | grep '\-\-user')" 
+fi
 
 if docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CgroupParent={{ .HostConfig.CgroupParent }}' | grep -P '=\w+' ; then
   log_failure 'V-235815' 'cgroup usage detected, must be manually checked.'
 else
   log_succes 'V-235815' 'only default cgroups defined on running containers'
 fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CgroupParent={{ .HostConfig.CgroupParent }}' | grep -P '=\w+'"
+  
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CgroupParent={{ .HostConfig.CgroupParent }}' | grep -P '=\w+')" 
+fi
 
 if docker ps --quiet --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: Privileged={{ .HostConfig.Privileged }}' | grep true ; then
   log_failure 'V-235802' 'containers running as privileged.'
 else
   log_succes 'V-235802' 'no containers found running as privileged'
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --quiet --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: Privileged={{ .HostConfig.Privileged }}'"
+  echo "Output: $(docker ps --quiet --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: Privileged={{ .HostConfig.Privileged }}')" 
 fi
 
 if which auditctl ; then
@@ -288,6 +449,12 @@ if which auditctl ; then
     log_failure 'V-235779' 'docker.docket auditd rule missing'
   fi
   log_succes 'V-235779' 'Required auditd rules for docker are present'
+  if [ ! -z "$SHOW_ARTIFACT" ] ; then
+    echo "Command: systemctl show -p FragmentPath docker.service or auditctl -l | grep docker.service"
+     echo "Output: $(systemctl show -p FragmentPath docker.service or auditctl -l | grep docker.service)"
+    echo "Command: systemctl show -p FragmentPath docker.socket or auditctl -l | grep docker.sock "
+     echo "Output: $(systemctl show -p FragmentPath docker.socket or auditctl -l | grep docker.sock )"
+  fi
 else
   log_failure 'V-235779' 'auditd does not appear to be installed, which will result in many STIG findings'
 fi
@@ -297,9 +464,17 @@ if docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CapAdd={{
 else
   log_succes 'V-235801' 'no containers found with additional capabilities passed in.'
 fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CapAdd={{ .HostConfig.CapAdd }} CapDrop={{ .HostConfig.CapDrop }}' | grep -v ': CapAdd=<no value> CapDrop=<no value>$'"
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CapAdd={{ .HostConfig.CapAdd }} CapDrop={{ .HostConfig.CapDrop }}' | grep -v ': CapAdd=<no value> CapDrop=<no value>$')" 
+fi
 
 PASS=1
 for i in $(docker ps -qa); do 
+  if [ ! -z "$SHOW_ARTIFACT" ] ; then
+    echo "Command: docker exec $i ps -el | grep -i sshd"
+    echo "Output: $(docker exec $i ps -el | grep -i sshd)" 
+  fi
   if docker exec $i ps -el | grep -i sshd ; then
     log_failure 'V-235803' 'containers running sshd found.'
     PASS=0
@@ -310,21 +485,33 @@ if [ $PASS -eq 1 ] ; then
 fi
 
 if docker version --format '{{ .Server.Experimental }}' | grep --quiet false; then
-        log_succes "V-235792" "Experimental features are disabled"
+  log_succes "V-235792" "Experimental features are disabled"
 else
-        log_failure "V-235792" "Experimental features are enabled"
+  log_failure "V-235792" "Experimental features are enabled"
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker version --format '{{ .Server.Experimental }}' | grep false"
+  echo "Output: $(docker version --format '{{ .Server.Experimental }}' | grep false)" 
 fi
 
 if jq -e '."log-driver" == "syslog"' /etc/docker/daemon.json | grep --quiet true; then
-        log_succes "V-235831" "log driver is enabled"
+  log_succes "V-235831" "log driver is enabled"
 else
-        jqi '. + {"log-driver": "syslog"}' /etc/docker/daemon.json
-        log_succes "V-235831" "log driver has been configured in script"
+  jqi '. + {"log-driver": "syslog"}' /etc/docker/daemon.json
+  log_succes "V-235831" "log driver has been configured in script"
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: jq -e '.\"log-driver\" == \"syslog\"' /etc/docker/daemon.json | grep --quiet true"
+  echo "Output: $(jq -e '."log-driver" == "syslog"' /etc/docker/daemon.json | grep true)" 
 fi
 
-if ! (grep --quiet "syslog-address" /etc/docker/daemon.json) ; then
-	jqi '. + {"log-opts": {"syslog-address": "udp://127.0.0.1:25224", "tag": "container_name/{{.Name}}", "syslog-facility": "daemon" }}' /etc/docker/daemon.json
-	log_succes "V-235833" "Script configured docker daemon remote syslog settings"
-else
-    log_succes "V-235833" "Remote syslog already configured"
+  if ! (grep --quiet "syslog-address" /etc/docker/daemon.json) ; then
+  	jqi '. + {"log-opts": {"syslog-address": "udp://127.0.0.1:25224", "tag": "container_name/{{.Name}}", "syslog-facility": "daemon" }}' /etc/docker/daemon.json
+  	log_succes "V-235833" "Script configured docker daemon remote syslog settings"
+  else
+      log_succes "V-235833" "Remote syslog already configured"
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: grep --quiet \"syslog-address\" /etc/docker/daemon.json"
+  echo "Output: $(grep \"syslog-address\" /etc/docker/daemon.json)" 
 fi

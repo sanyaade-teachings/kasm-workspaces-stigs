@@ -63,3 +63,16 @@ Change line 144 of the db_restore script:
 Change the line to:
 
     TEMP_DB_BACKUP_PATH=${KASM_INSTALL_BASE}/tmp/kasm_db/
+
+## Considerations for Artifact Output
+When running apply_docker_stigs.sh, an optional flag [--show-artifact] can be set to enable verbose output. Artifacts will be output in the following format:
+
+    V-235831, PASS, log driver is enabled
+    Command: jq -e '."log-driver" == "syslog"' /etc/docker/daemon.json | grep --quiet true
+    Output: true
+
+
+
+    
+
+     

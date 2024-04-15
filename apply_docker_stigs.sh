@@ -89,29 +89,29 @@ fi
 chown root:root $DOCKER_DAEMON_JSON_PATH
 log_succes "V-235867" "set daemon.json ownership to root:root"
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-   echo "Command: chown root:root $DOCKER_DAEMON_JSON_PATH"
-   echo "Output: $(chown root:root $DOCKER_DAEMON_JSON_PATH)"
+   echo "Command: stat -c %U:%G $DOCKER_DAEMON_JSON_PATH"
+   echo "Output: $(stat -c %U:%G $DOCKER_DAEMON_JSON_PATH)"
 fi
 
 chmod 0644 $DOCKER_DAEMON_JSON_PATH
 log_succes "V-235868" "set daemon.json permissions to 644"
 if [ -n "$SHOW_ARTIFACT" ] ; then
-   echo "Command: chmod 0644 $DOCKER_DAEMON_JSON_PATH"
-   echo "Output: $(chmod 0644 $DOCKER_DAEMON_JSON_PATH)"
+   echo "Command: stat -c %a $DOCKER_DAEMON_JSON_PATH"
+   echo "Output: $(stat -c %a $DOCKER_DAEMON_JSON_PATH)"
 fi
 
 chmod 0660 $DOCKER_SOCK_PATH
 log_succes "V-235866" "Set docker sock permission to 660"
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-   echo "Command: chmod 0660 $DOCKER_SOCK_PATH"
-   echo "Output: $(chmod 0660 $DOCKER_SOCK_PATH)"
+   echo "Command: stat -c %a $DOCKER_SOCK_PATH"
+   echo "Output: $(stat -c %a $DOCKER_SOCK_PATH)"
 fi
 
 chown root:docker $DOCKER_SOCK_PATH
 log_succes "V-235865" "Set docker sock ownership to root:docker"
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-   echo "Command: chown root:docker $DOCKER_SOCK_PATH"
-   echo "Output: $(chown root:docker $DOCKER_SOCK_PATH)"
+   echo "Command: stat -c %U:%G $DOCKER_SOCK_PATH"
+   echo "Output: $(stat -c %U:%G $DOCKER_SOCK_PATH)"
 fi
 
 if [ ! -f "$DOCKER_LEGACY_CONF" ] ; then
@@ -121,57 +121,57 @@ else
   chown root:root $DOCKER_LEGACY_CONF
 	log_succes 'V-235869' 'Set ownership of legacy docker conf file to root:root.'
   if [ ! -z "$SHOW_ARTIFACT" ] ; then
-     echo "Command: chown root:root $DOCKER_LEGACY_CONF"
-     echo "Output: $(chown root:root $DOCKER_LEGACY_CONF)"
+     echo "Command: stat -c %U:%G $DOCKER_LEGACY_CONF"
+     echo "Output: $(stat -c %U:%G $DOCKER_LEGACY_CONF)"
   fi
   chmod 0644 $DOCKER_LEGACY_CONF
   log_succes "V-235870" "Set $DEFAULT_DOCKER_PATH permissions to 644"
   if [ ! -z "$SHOW_ARTIFACT" ] ; then
-     echo "Command: chmod 0644 $DOCKER_LEGACY_CONF"
-     echo "Output: $(chmod 0644 $DOCKER_LEGACY_CONF)"
+     echo "Command: stat -c %a $DOCKER_LEGACY_CONF"
+     echo "Output: $(stat -c %a $DOCKER_LEGACY_CONF)"
   fi
 fi
 
 chown root:root $ETC_DOCKER_PATH
 log_succes "V-235855" "Set $ETC_DOCKER_PATH ownership to root:root"
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-   echo "Command: chown root:root $ETC_DOCKER_PATH"
-   echo "Output: $(chown root:root $ETC_DOCKER_PATH)"
+   echo "Command: stat -c %U:%G $ETC_DOCKER_PATH"
+   echo "Output: $(stat -c %U:%G $ETC_DOCKER_PATH)"
 fi
 
 chmod 755 $ETC_DOCKER_PATH
 log_succes "V-235856" "Set $ETC_DOCKER_PATH permissions to 755"
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-   echo "Command: chmod 755 $ETC_DOCKER_PATH"
-   echo "Output: $(chmod 755 $ETC_DOCKER_PATH)"
+   echo "Command: stat -c %a $ETC_DOCKER_PATH"
+   echo "Output: $(stat -c %a $ETC_DOCKER_PATH)"
 fi
 
 chown root:root $DOCKER_SOCKET_PATH
 log_succes "V-235853" "Set docker.socket file ownership to root:root"
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-   echo "Command: chown root:root $DOCKER_SOCKET_PATH"
-   echo "Output: $(chown root:root $DOCKER_SOCKET_PATH)"
+   echo "Command: stat -c %U:%G $DOCKER_SOCKET_PATH"
+   echo "Output: $(stat -c %U:%G $DOCKER_SOCKET_PATH)"
 fi
 
 chmod 0644 $DOCKER_SOCKET_PATH
 log_succes "V-235854" "Set docker.socket file permissions to 644"
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-   echo "Command: chmod 0644 $DOCKER_SOCKET_PATH"
-   echo "Output: $(chmod 0644 $DOCKER_SOCKET_PATH)"
+   echo "Command: stat -c %a $DOCKER_SOCKET_PATH"
+   echo "Output: $(stat -c %a $DOCKER_SOCKET_PATH)"
 fi
 
 chown root:root $DOCKER_SERVICE_PATH
 log_succes "V-235851" "Set docker.service file ownership to root:root"
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-   echo "Command:chown root:root $DOCKER_SERVICE_PATH"
-   echo "Output: $(chown root:root $DOCKER_SERVICE_PATH)"
+   echo "Command:stat -c %U:%G $DOCKER_SERVICE_PATH"
+   echo "Output: $(stat -c %U:%G $DOCKER_SERVICE_PATH)"
 fi
 
 chmod 0644 $DOCKER_SERVICE_PATH
 log_succes "V-235852" "Set docker.service file permissions to 0644"
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-   echo "Command: chmod 0644 $DOCKER_SERVICE_PATH"
-   echo "Output: $(chmod 0644 $DOCKER_SERVICE_PATH)"
+   echo "Command: stat -c %a $DOCKER_SERVICE_PATH"
+   echo "Output: $(stat -c %a $DOCKER_SERVICE_PATH)"
 fi
 
 if docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: SecurityOpt={{ .HostConfig.SecurityOpt }}' 2>/dev/null | grep -i --quiet unconfined ; then
@@ -180,8 +180,8 @@ else
 	log_succes "V-235812" "no seccomp unconfined containers found"
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: SecurityOpt={{ .HostConfig.SecurityOpt }}' 2>/dev/null | grep -i unconfined "
-  echo "Output: $(docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: SecurityOpt={{ .HostConfig.SecurityOpt }}' 2>/dev/null | grep -i unconfined)"
+  echo "Command: docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: SecurityOpt={{ .HostConfig.SecurityOpt }}' "
+  echo "Output: $(docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: SecurityOpt={{ .HostConfig.SecurityOpt }}')"
 fi
 
 if docker ps --quiet --all | xargs --no-run-if-empty -- docker inspect --format '{{ .Id }}: Ulimits={{ .HostConfig.Ulimits }}' 2>/dev/null | grep -v "no value" ; then
@@ -191,8 +191,8 @@ else
 fi
 
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --quiet --all | xargs --no-run-if-empty -- docker inspect --format '{{ .Id }}: Ulimits={{ .HostConfig.Ulimits }}' 2>/dev/null | grep -v 'no value' "
-   echo "Output: $(docker ps --quiet --all | xargs --no-run-if-empty -- docker inspect --format '{{ .Id }}: Ulimits={{ .HostConfig.Ulimits }}' 2>/dev/null | grep -v 'no value')"
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Ulimits={{ .HostConfig.Ulimits }}' "
+   echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Ulimits={{ .HostConfig.Ulimits }}')"
 fi
 
 # can be configured as docker daemon argument
@@ -202,7 +202,8 @@ else
   log_succes "V-235789" "no insecure Registries configured."
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "ps -ef | grep dockerd | grep --quiet 'insecure-registry' : $(ps -ef | grep dockerd | grep --quiet 'insecure-registry')"
+  echo "Command: ps -ef | grep dockerd "
+  echo "Output: $(ps -ef | grep dockerd)"
 fi
 
 # can be configured in daemon.json
@@ -212,9 +213,9 @@ else
   log_succes "V-235789" "no insecure Registries configured."
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: grep --quiet 'insecure-registry' /etc/docker/daemon.json"
+  echo "Command: grep 'insecure-registry' /etc/docker/daemon.json"
   
-  echo "Output $(grep --quiet 'insecure-registry' /etc/docker/daemon.json)" 
+  echo "Output $(grep 'insecure-registry' /etc/docker/daemon.json)" 
 fi
 
 if docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: PidMode={{ .HostConfig.PidMode }}' 2>/dev/null | grep -i pidmode=host ; then
@@ -223,9 +224,9 @@ else
   log_succes 'V-235784' 'no containers running with host PID namespace detected'
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: PidMode={{ .HostConfig.PidMode }}' 2>/dev/null | grep -i pidmode=host"
+  echo "Command: docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: PidMode={{ .HostConfig.PidMode }}'"
   
-   echo "Output: $(docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: PidMode={{ .HostConfig.PidMode }}' 2>/dev/null | grep -i pidmode=host)" 
+   echo "Output: $(docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: PidMode={{ .HostConfig.PidMode }}')" 
 fi
 
 if docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: IpcMode={{ .HostConfig.IpcMode }}' 2>/dev/null | grep -i ipcmode=host ; then
@@ -234,9 +235,9 @@ else
   log_succes 'V-235785' 'no containers running with host IPC namespace detected'
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: IpcMode={{ .HostConfig.IpcMode }}' 2>/dev/null | grep -i ipcmode=host"
+  echo "Command: docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: IpcMode={{ .HostConfig.IpcMode }}'"
   
-   echo "Output: $(docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: IpcMode={{ .HostConfig.IpcMode }}' 2>/dev/null | grep -i ipcmode=host)" 
+   echo "Output: $(docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: IpcMode={{ .HostConfig.IpcMode }}')" 
 fi
 
 # can be configured as docker daemon argument
@@ -246,8 +247,8 @@ else
   log_succes "V-235791" "userland-proxy flag not used as docker service arguments."
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: ps -ef | grep dockerd | grep 'userland-proxy'"
-   echo "Output: $(ps -ef | grep dockerd | grep 'userland-proxy')" 
+  echo "Command: ps -ef | grep dockerd"
+   echo "Output: $(ps -ef | grep dockerd)" 
 fi
 # can be configured in daemon.json
 if grep --quiet -Pi '"userland-proxy"\s*:\s*false' /etc/docker/daemon.json ; then
@@ -293,8 +294,8 @@ else
   log_succes 'V-235799' 'all containers running with apparmor profiles'
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: AppArmorProfile={{ .AppArmorProfile }}' | grep -i 'AppArmorProfile=unconfined'"
-  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: AppArmorProfile={{ .AppArmorProfile }}' | grep -i 'AppArmorProfile=unconfined')" 
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: AppArmorProfile={{ .AppArmorProfile }}'"
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: AppArmorProfile={{ .AppArmorProfile }}')" 
 fi
 
 log_manual 'V-235837' 'review below ports and ensure they are in the SSP, look at the HostPort field.'
@@ -305,13 +306,14 @@ else
   docker ps -q | xargs docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort
 fi
 
+log_manual 'V-235804' 'review below ports and ensure they are in the SSP, look at the HostPort field.'
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
   echo "Command: docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host"
   echo "Output: $(docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host) " 
 else
   docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host
 fi
-log_manual 'V-235804' 'review above ports and ensure they are in the SSP, look at the HostPort field.'
+
 
 if which ausearch ; then
     if sudo ausearch -k docker | grep exec | grep --quiet privileged ; then
@@ -333,8 +335,8 @@ else
   log_succes 'V-235817' 'no containers running sharing host user namespace detected'
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UsernsMode={{ .HostConfig.UsernsMode }}' | grep -i 'UsernsMode=host'"
-  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UsernsMode={{ .HostConfig.UsernsMode }}' | grep -i 'UsernsMode=host')" 
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UsernsMode={{ .HostConfig.UsernsMode }}'"
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UsernsMode={{ .HostConfig.UsernsMode }}')" 
 fi
 
 LOW_HOST_PORT=$(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -Pio '(?<=HostPort:)\d+' | sort -n | head -n 1)
@@ -344,8 +346,8 @@ else
   log_succes 'V-235819' 'no host ports mapped below 1024'; 
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -Pio '(?<=HostPort:)\d+' | sort -n | head -n 1 "
-  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -Pio '(?<=HostPort:)\d+' | sort -n | head -n 1) " 
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' "
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}') " 
 fi
 
 if docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: NetworkMode={{ .HostConfig.NetworkMode }}' 2>/dev/null | grep --quiet -i "NetworkMode=host" ; then
@@ -354,8 +356,8 @@ else
   log_succes 'V-235805' 'no containers running sharing hosts netork namespace'
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: NetworkMode={{ .HostConfig.NetworkMode }}' 2>/dev/null | grep --quiet -i 'NetworkMode=host'"
-  echo "Output: $(docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: NetworkMode={{ .HostConfig.NetworkMode }}' 2>/dev/null | grep --quiet -i 'NetworkMode=host') " 
+  echo "Command: docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: NetworkMode={{ .HostConfig.NetworkMode }}'"
+  echo "Output: $(docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: NetworkMode={{ .HostConfig.NetworkMode }}') " 
 fi
 
 
@@ -365,8 +367,8 @@ else
   log_succes 'V-235809' 'no containers running with host devices passed in.'
 fi 
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Devices={{ .HostConfig.Devices }}' | grep --quiet -i 'pathincontainer'"
-  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Devices={{ .HostConfig.Devices }}' | grep --quiet -i 'pathincontainer')" 
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Devices={{ .HostConfig.Devices }}'"
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Devices={{ .HostConfig.Devices }}')" 
 fi
 
 
@@ -376,8 +378,8 @@ else
   log_succes 'V-235783' 'no sensitive directories found mappend into containers'
 fi 
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Volumes={{ .Mounts }}' | grep -iv 'ucp\|kubelet\|dtr' | grep -Po 'Source:\S+' | grep -P '\:(/|/boot|/dev|/etc|/lib|/proc|/sys|/usr)$'"
-  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Volumes={{ .Mounts }}' | grep -iv 'ucp\|kubelet\|dtr' | grep -Po 'Source:\S+' | grep -P '\:(/|/boot|/dev|/etc|/lib|/proc|/sys|/usr)$')" 
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Volumes={{ .Mounts }}' | grep -iv 'ucp\|kubelet\|dtr'"
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Volumes={{ .Mounts }}' | grep -iv 'ucp\|kubelet\|dtr')" 
 fi
 
 if docker info | grep --quiet -e "^Storage Driver:\s*aufs\s*$" ; then
@@ -386,8 +388,8 @@ else
   log_succes 'V-235790' 'aufs file system not detected'
 fi 
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker info | grep --quiet -e '^Storage Driver:\s*aufs\s*$'"
-  echo "Output: $(docker info | grep --quiet -e \"^Storage Driver:\s*aufs\s*$\")"  
+  echo "Command: docker info | grep -e '^Storage Driver:\s*aufs\s*$'"
+  echo "Output: $(docker info | grep -e '^Storage Driver:\s*aufs\s*$')"  
 fi
 
 if docker ps --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: Propagation={{range $mnt := .Mounts}} {{json $mnt.Propagation}} {{end}}' 2>/dev/null | grep --quiet 'shared' ; then
@@ -396,8 +398,8 @@ else
   log_succes 'V-235810' 'no mounts set to shared propogation mode found'
 fi 
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: Propagation={{range $mnt := .Mounts}} {{json $mnt.Propagation}} {{end}}' 2>/dev/null | grep --quiet 'shared'"
-  echo "Output: $(docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: Propagation={{range $mnt := .Mounts}} {{json $mnt.Propagation}} {{end}}' 2>/dev/null | grep --quiet 'shared')" 
+  echo "Command: docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: Propagation={{range $mnt := .Mounts}} {{json $mnt.Propagation}} {{end}}'"
+  echo "Output: $(docker ps --all | grep -iv 'ucp\|kube\|dtr' | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: Propagation={{range $mnt := .Mounts}} {{json $mnt.Propagation}} {{end}}')" 
 fi
 
 if docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UTSMode={{ .HostConfig.UTSMode }}' | grep -i '=host' ; then
@@ -406,8 +408,8 @@ else
   log_succes 'V-235811' 'no containers found with host UTC namespace shared'
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UTSMode={{ .HostConfig.UTSMode }}' | grep -i '=host'"
-  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UTSMode={{ .HostConfig.UTSMode }}' | grep -i '=host')" 
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UTSMode={{ .HostConfig.UTSMode }}'"
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: UTSMode={{ .HostConfig.UTSMode }}')" 
 fi
 
 if ps aux | grep 'docker exec' | grep '\-\-user' ; then
@@ -416,8 +418,8 @@ else
   log_succes 'V-235814' 'no exec sessions with user flag found'
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: ps aux | grep 'docker exec' | grep '\-\-user'"
-  echo "Output: $(ps aux | grep 'docker exec' | grep '\-\-user')" 
+  echo "Command: sudo ausearch -k docker | grep exec | grep user"
+  echo "Output: $(sudo ausearch -k docker | grep exec | grep user)" 
 fi
 
 if docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CgroupParent={{ .HostConfig.CgroupParent }}' | grep -P '=\w+' ; then
@@ -426,9 +428,9 @@ else
   log_succes 'V-235815' 'only default cgroups defined on running containers'
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CgroupParent={{ .HostConfig.CgroupParent }}' | grep -P '=\w+'"
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CgroupParent={{ .HostConfig.CgroupParent }}'"
   
-  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CgroupParent={{ .HostConfig.CgroupParent }}' | grep -P '=\w+')" 
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CgroupParent={{ .HostConfig.CgroupParent }}')" 
 fi
 
 if docker ps --quiet --all | grep -iv "ucp\|kube\|dtr" | awk '{print $1}' | xargs docker inspect --format '{{ .Id }}: Privileged={{ .HostConfig.Privileged }}' | grep true ; then
@@ -465,18 +467,18 @@ else
   log_succes 'V-235801' 'no containers found with additional capabilities passed in.'
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CapAdd={{ .HostConfig.CapAdd }} CapDrop={{ .HostConfig.CapDrop }}' | grep -v ': CapAdd=<no value> CapDrop=<no value>$'"
-  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CapAdd={{ .HostConfig.CapAdd }} CapDrop={{ .HostConfig.CapDrop }}' | grep -v ': CapAdd=<no value> CapDrop=<no value>$')" 
+  echo "Command: docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CapAdd={{ .HostConfig.CapAdd }} CapDrop={{ .HostConfig.CapDrop }}'"
+  echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: CapAdd={{ .HostConfig.CapAdd }} CapDrop={{ .HostConfig.CapDrop }}')" 
 fi
 
 PASS=1
 for i in $(docker ps -qa); do 
-  if [ ! -z "$SHOW_ARTIFACT" ] ; then
-    echo "Command: docker exec $i ps -el | grep -i sshd"
-    echo "Output: $(docker exec $i ps -el | grep -i sshd)" 
-  fi
   if docker exec $i ps -el | grep -i sshd ; then
     log_failure 'V-235803' 'containers running sshd found.'
+    if [ ! -z "$SHOW_ARTIFACT" ] ; then
+    echo "Command: docker exec $i ps -el | grep -i sshd"
+    echo "Output: $(docker exec $i ps -el | grep -i sshd)" 
+    fi  
     PASS=0
   fi
 done
@@ -501,8 +503,8 @@ else
   log_succes "V-235831" "log driver has been configured in script"
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: jq -e '.\"log-driver\" == \"syslog\"' /etc/docker/daemon.json | grep --quiet true"
-  echo "Output: $(jq -e '."log-driver" == "syslog"' /etc/docker/daemon.json | grep true)" 
+  echo "Command: cat $DOCKER_DAEMON_JSON_PATH | grep -i log-driver"
+  echo "Output: $(cat $DOCKER_DAEMON_JSON_PATH | grep -i log-driver)" 
 fi
 
   if ! (grep --quiet "syslog-address" /etc/docker/daemon.json) ; then
@@ -512,6 +514,6 @@ fi
       log_succes "V-235833" "Remote syslog already configured"
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: grep --quiet \"syslog-address\" /etc/docker/daemon.json"
-  echo "Output: $(grep \"syslog-address\" /etc/docker/daemon.json)" 
+  echo "Command: cat $DOCKER_DAEMON_JSON_PATH | grep -i log-driver"
+  echo "Output: $(cat $DOCKER_DAEMON_JSON_PATH | grep -i log-driver)" 
 fi

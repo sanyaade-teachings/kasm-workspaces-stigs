@@ -284,7 +284,7 @@ else
   fi
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-   echo "Command: grep -Pi '"ip"\s*:\s*"[^0]' /etc/docker/daemon.json"
+   echo "Command: grep -Pi '\"ip\"\s*:\s*\"[^0]' /etc/docker/daemon.json"
    echo "Output: $(grep -Pi '"ip"\s*:\s*"[^0]' /etc/docker/daemon.json)"
 fi
 

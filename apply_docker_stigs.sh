@@ -2,11 +2,38 @@
 set -e
 # set -x
 
-if [[ "$*" == *"--show-artifact"* ]]; then
-  SHOW_ARTIFACT=true
-else
-  SHOW_ARTIFACT=false
-fi
+function display_help() {
+  CMD='\033[0;31m'
+  NC='\033[0m'
+  echo "Usage IE:"
+  echo "${0} --verbose"
+  echo    ""
+  echo    "Flag                                        Description"
+  echo    "---------------------------------------------------------------------------------------------------------------"
+  echo -e "| ${CMD}-h|--help${NC}                  | Display this help menu                                                      |"
+  echo -e "| ${CMD}-v|--verbose${NC}               | Show output of STIG validation commands                                     |"
+  echo    "---------------------------------------------------------------------------------------------------------------"
+}
+
+# Command line opts
+ARGS=("$@")
+for index in "${!ARGS[@]}"; do
+  case ${ARGS[index]} in
+    -v|--verbose)
+      SHOW_ARTIFACT=true
+      ;;
+    -h|--help)
+      display_help
+      exit 1
+      ;;
+    -*|--*)
+      echo "Unknown option ${ARGS[index]}"
+      display_help
+      cleanup_log
+      exit 1
+      ;;
+  esac
+done
 
 ARCH=$(uname -m | sed 's/aarch64/arm64/g' | sed 's/x86_64/amd64/g')
 if [ "$ARCH" != "amd64" ] ; then

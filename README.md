@@ -64,12 +64,12 @@ Change the line to:
 
     TEMP_DB_BACKUP_PATH=${KASM_INSTALL_BASE}/tmp/kasm_db/
 
-## Considerations for Artifact Output
-When running apply_docker_stigs.sh, an optional flag [--show-artifact] can be set to enable verbose output. Artifacts will be output in the following format:
+## Verbose output for Checklist Artifacts
+When running apply_docker_stigs.sh or apply_kasm_stigs.sh, an optional flag `--verbose` can be set to show the output of the commands specified in the STIG check to validate the system passes the check. In some cases this STIG hardening script will show **PASS** but the command ouput may indicates a failure according to the STIG. The hardening script does not restart docker until the end, so changes made during the script execution may not have been applied yet. Therefore, you may need to run the script twice with the `--verbose` flag to ensure the output matches the PASS status provided by the script. Artifacts will be output in the following format:
 
     V-235831, PASS, log driver is enabled
-    Command: jq -e '."log-driver" == "syslog"' /etc/docker/daemon.json | grep --quiet true
-    Output: true
+    Command: cat /etc/docker/daemon.json | grep -i log-driver
+    Output:   "log-driver": "syslog",
 
 
 

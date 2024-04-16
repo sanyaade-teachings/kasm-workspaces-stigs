@@ -266,7 +266,7 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_agent' /opt/kasm/curren
   fi
 fi
 
-# RO containers V-235808
+### RO containers V-235808
 
 # Agent changes
 if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_agent' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 && [ ! -d "/opt/kasm/current/tmp/kasm_agent" ]; then
@@ -281,10 +281,6 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_agent' /opt/kasm/curren
   fi
 else
   log_succes "V-235808" "kasm_agent is read only"
-fi
-if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_agent.read_only' /opt/kasm/current/docker/docker-compose.yaml "
-  echo "Output: $(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_agent.read_only' /opt/kasm/current/docker/docker-compose.yaml)"
 fi
 
 # Proxy changes
@@ -306,10 +302,6 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.proxy' /opt/kasm/current/doc
 else
   log_succes "V-235808" "proxy is read only"
 fi
-if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command:  /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.proxy.read_only' /opt/kasm/current/docker/docker-compose.yaml"
-  echo "Output: $( /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.proxy.read_only' /opt/kasm/current/docker/docker-compose.yaml)"
-fi
 
 # API changes
 if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_api' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 && [ ! -d "/opt/kasm/current/tmp/kasm_api" ]; then
@@ -325,10 +317,6 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_api' /opt/kasm/current/
   fi
 else
   log_succes "V-235808" "kasm_api is read only"
-fi
-if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command:  /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_api.read_only' /opt/kasm/current/docker/docker-compose.yaml "
-  echo "Output: $(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_api.read_only' /opt/kasm/current/docker/docker-compose.yaml)"
 fi
 
 # Manager Changes
@@ -349,10 +337,6 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_manager' /opt/kasm/curr
 else
   log_succes "V-235808" "kasm_manager is read only"
 fi
-if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command:  /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_manager.read_only' /opt/kasm/current/docker/docker-compose.yaml "
-  echo "Output: $(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_manager.read_only' /opt/kasm/current/docker/docker-compose.yaml)"
-fi
 
 # Share changes
 if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_share' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 && [ ! -d "/opt/kasm/current/tmp/kasm_share" ]; then
@@ -367,10 +351,6 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_share' /opt/kasm/curren
   fi
 else
   log_succes "V-235808" "kasm_share is read only"
-fi
-if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command:  /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_share.read_only' /opt/kasm/current/docker/docker-compose.yaml "
-  echo "Output: $(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_share.read_only' /opt/kasm/current/docker/docker-compose.yaml)"
 fi
 
 # Database changes
@@ -406,10 +386,6 @@ else
     if [[ "$success" -eq "1" ]]; then
         log_succes "V-235808" "kasm_db is read only"
     fi
-    if [ ! -z "$SHOW_ARTIFACT" ] ; then
-      echo "Command:  /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.db.read_only' /opt/kasm/current/docker/docker-compose.yaml "
-      echo "Output: $(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.db.read_only' /opt/kasm/current/docker/docker-compose.yaml)"
-    fi
 fi
 
 # Redis changes
@@ -426,9 +402,11 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_redis' /opt/kasm/curren
 else
   log_succes "V-235808" "kasm_redis is read only"
 fi
+
+# Show output of all containers for v-235808
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command:  /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_redis.read_only' /opt/kasm/current/docker/docker-compose.yaml "
-  echo "Output: $(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_redis.read_only' /opt/kasm/current/docker/docker-compose.yaml)"
+  echo "Command:  sudo docker ps --quiet --all | xargs -L 1 sudo docker inspect --format '{{ .Id }}: ReadonlyRootfs={{ .HostConfig.ReadonlyRootfs }}' "
+  echo "Output: $(sudo docker ps --quiet --all | xargs -L 1 sudo docker inspect --format '{{ .Id }}: ReadonlyRootfs={{ .HostConfig.ReadonlyRootfs }}')"
 fi
 
 # agent health check
@@ -508,10 +486,6 @@ for container in ${CONTAINERS_TO_CHANGE[@]}; do
             fi
         fi
         log_succes "V-235830" "Container ${container} set to run as kasm user ${KUID}"
-        if [ ! -z "$SHOW_ARTIFACT" ] ; then
-          echo "Command: /opt/kasm/bin/utils/yq_$(uname -m) '.services.'${container}' | (. == null)' /opt/kasm/current/docker/docker-compose.yaml "
-          echo "Output: "$( $(/opt/kasm/bin/utils/yq_$(uname -m) '.services.'${container}' | (. == null)' /opt/kasm/current/docker/docker-compose.yaml)) == "False"
-        fi
     else
         if [[ $(/opt/kasm/bin/utils/yq_x86_64 '.services.'${container}' | (. == null)' /opt/kasm/current/docker/docker-compose.yaml) == 'false' ]]; then
             USEROUT=$(/opt/kasm/bin/utils/yq_$(uname -m) '.services.'${container}'.user' /opt/kasm/current/docker/docker-compose.yaml)
@@ -538,20 +512,16 @@ for container in ${CONTAINERS_TO_CHANGE[@]}; do
                     chown -R kasm:kasm /opt/kasm/current/certs/kasm_nginx*
                 fi
                 log_succes "V-235830" "Container ${container} set to run as kasm user ${KUID}"   
-                if [ ! -z "$SHOW_ARTIFACT" ] ; then
-                  echo "Command:  /opt/kasm/bin/utils/yq_x86_64 '.services.'${container}' | (. == null)' /opt/kasm/current/docker/docker-compose.yaml) "
-                  echo "Output: $(/opt/kasm/bin/utils/yq_x86_64 '.services.'${container}' | (. == null)' /opt/kasm/current/docker/docker-compose.yaml)"
-                fi
             else
-                log_succes "V-235830" "Container ${container} set to run as kasm user ${KUID}"   
-                if [ ! -z "$SHOW_ARTIFACT" ] ; then
-                  echo "Command:  /opt/kasm/bin/utils/yq_x86_64 '.services.'${container}' | (. == null)' /opt/kasm/current/docker/docker-compose.yaml) "
-                  echo "Output: $(/opt/kasm/bin/utils/yq_x86_64 '.services.'${container}' | (. == null)' /opt/kasm/current/docker/docker-compose.yaml)"
-                fi         
+                log_succes "V-235830" "Container ${container} set to run as kasm user ${KUID}"        
             fi
         fi
     fi
 done
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command:  docker ps -q -a | xargs docker inspect --format '{{ .Id }}: User={{ .Config.User }}' "
+  echo "Output: $(docker ps -q -a | xargs docker inspect --format '{{ .Id }}: User={{ .Config.User }}')"
+fi 
 
 #### Restart containers if flagged ####
 if [ "${RESTART_CONTAINERS}" == "true" ]; then
@@ -567,6 +537,6 @@ else
   log_succes 'V-235827' 'All running containers have health checks'
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command:  docker ps | grep -viP --quiet '(\(health|CONTAINER ID)' "
-  echo "Output: $(docker ps | grep -viP --quiet '(\(health|CONTAINER ID)')"
+  echo "Command:  docker ps | grep -viP '(\(health|CONTAINER ID)' "
+  echo "Output: $(docker ps | grep -viP '(\(health|CONTAINER ID)')"
 fi

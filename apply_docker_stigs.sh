@@ -227,22 +227,22 @@ if [ $(sudo jq -r '."log-opts"."max-size"' /etc/docker/daemon.json) != 'null' ] 
 else
   if  [ $(sudo jq -r '."log-opts"."max-size"' /etc/docker/daemon.json) == 'null' ] ; then
     if which jq ; then
-        cat <<< $(sudo jq '."log-opts" |= . + {"max-size": 100}' /etc/docker/daemon.json) > /etc/docker/daemon.json
+        cat <<< $(sudo jq '."log-opts" |= . + {"max-size": "50m"}' /etc/docker/daemon.json) > /etc/docker/daemon.json
         log_succes "V-235786" "(1 of 2) max-size has been set by this script, be sure to restart the docker service."
     else
         log_failure "V-235786" "(1 of 2) max-size is not explicitly set, unable to fix, jq package not installed."
-        echo "	TIP: add '\"max-size\": 100' to /etc/docker/daemon.json and restart the docker service"
+        echo "	TIP: add '\"max-size\": \"50m\"' to /etc/docker/daemon.json and restart the docker service"
     fi
   else
     log_succes "V-235786" "(1 of 2) max-size is set."
   fi
   if [ $(sudo jq -r '."log-opts"."max-file"' /etc/docker/daemon.json) == 'null' ] ; then
     if which jq ; then
-        cat <<< $(sudo jq '."log-opts" |= . + {"max-file": 100}' /etc/docker/daemon.json) > /etc/docker/daemon.json
+        cat <<< $(sudo jq '."log-opts" |= . + {"max-file": 10}' /etc/docker/daemon.json) > /etc/docker/daemon.json
         log_succes "V-235786" "(2 of 2) max-file has been set by this script, be sure to restart the docker service."
     else
         log_failure "V-235786" "(2 of 2) max-file is not explicitly set, unable to fix, jq package not installed."
-        echo "	TIP: add '\"max-file\": 100' to /etc/docker/daemon.json and restart the docker service"
+        echo "	TIP: add '\"max-file\": 10' to /etc/docker/daemon.json and restart the docker service"
     fi
   else 
   log_succes "V-235786" "(2 of 2) max-file is set."

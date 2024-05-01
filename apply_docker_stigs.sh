@@ -222,6 +222,39 @@ if [ ! -z "$SHOW_ARTIFACT" ] ; then
    echo "Output: $(docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: Ulimits={{ .HostConfig.Ulimits }}')"
 fi
 
+if [ $(sudo jq -r '."log-opts"."max-size"' /etc/docker/daemon.json) != 'null' ] && [ $(sudo jq -r '."log-opts"."max-file"' /etc/docker/daemon.json) != 'null' ] ; then
+  log_succes "V-235786" "max-size and max-file are set."
+else
+  if  [ $(sudo jq -r '."log-opts"."max-size"' /etc/docker/daemon.json) == 'null' ] ; then
+    if which jq ; then
+        cat <<< $(sudo jq '."log-opts" |= . + {"max-size": 100}' /etc/docker/daemon.json) > /etc/docker/daemon.json
+        log_succes "V-235786" "(1 of 2) max-size has been set by this script, be sure to restart the docker service."
+    else
+        log_failure "V-235786" "(1 of 2) max-size is not explicitly set, unable to fix, jq package not installed."
+        echo "	TIP: add '\"max-size\": 100' to /etc/docker/daemon.json and restart the docker service"
+    fi
+  else
+    log_succes "V-235786" "(1 of 2) max-size is set."
+  fi
+  if [ $(sudo jq -r '."log-opts"."max-file"' /etc/docker/daemon.json) == 'null' ] ; then
+    if which jq ; then
+        cat <<< $(sudo jq '."log-opts" |= . + {"max-file": 100}' /etc/docker/daemon.json) > /etc/docker/daemon.json
+        log_succes "V-235786" "(2 of 2) max-file has been set by this script, be sure to restart the docker service."
+    else
+        log_failure "V-235786" "(2 of 2) max-file is not explicitly set, unable to fix, jq package not installed."
+        echo "	TIP: add '\"max-file\": 100' to /etc/docker/daemon.json and restart the docker service"
+    fi
+  else 
+  log_succes "V-235786" "(2 of 2) max-file is set."
+  fi
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: grep -Pi '"max-file"\s*:\s*\d+' /etc/docker/daemon.json"
+  echo "Output: $(grep -Pi '"max-file"\s*:\s*\d+' /etc/docker/daemon.json)" 
+  echo "Command: grep -Pi '"max-size"\s*:\s*\d+' /etc/docker/daemon.json"
+  echo "Output: $(grep -Pi '"max-size"\s*:\s*\d+' /etc/docker/daemon.json)" 
+fi
+
 # can be configured as docker daemon argument
 if ps -ef | grep dockerd | grep --quiet 'insecure-registry'; then
   log_failure "V-235789" "insecure Registries are configured."
@@ -534,11 +567,45 @@ if [ ! -z "$SHOW_ARTIFACT" ] ; then
   echo "Output: $(cat $DOCKER_DAEMON_JSON_PATH | grep -i log-driver)" 
 fi
 
-  if ! (grep --quiet "syslog-address" /etc/docker/daemon.json) ; then
-  	jqi '. + {"log-opts": {"syslog-address": "udp://127.0.0.1:25224", "tag": "container_name/{{.Name}}", "syslog-facility": "daemon" }}' /etc/docker/daemon.json
-  	log_succes "V-235833" "Script configured docker daemon remote syslog settings"
+if [ $(sudo jq -r '."log-opts"."max-size"' /etc/docker/daemon.json) != 'null' ] && [ $(sudo jq -r '."log-opts"."max-file"' /etc/docker/daemon.json) != 'null' ] ; then
+  log_succes "V-235832" "max-size and max-file are set."
+else
+  if  [ $(sudo jq -r '."log-opts"."max-size"' /etc/docker/daemon.json) == 'null' ] ; then
+    if which jq ; then
+        cat <<< $(sudo jq '."log-opts" |= . + {"max-size": 100}' /etc/docker/daemon.json) > /etc/docker/daemon.json
+        log_succes "V-235832" "(1 of 2) max-size has been set by this script, be sure to restart the docker service."
+    else
+        log_failure "V-235832" "(1 of 2) max-size is not explicitly set, unable to fix, jq package not installed."
+        echo "	TIP: add '\"max-size\": 100' to /etc/docker/daemon.json and restart the docker service"
+    fi
   else
-      log_succes "V-235833" "Remote syslog already configured"
+    log_succes "V-235832" "(1 of 2) max-size is set."
+  fi
+  if [ $(sudo jq -r '."log-opts"."max-file"' /etc/docker/daemon.json) == 'null' ] ; then
+    if which jq ; then
+        cat <<< $(sudo jq '."log-opts" |= . + {"max-file": 100}' /etc/docker/daemon.json) > /etc/docker/daemon.json
+        log_succes "V-235832" "(2 of 2) max-file has been set by this script, be sure to restart the docker service."
+    else
+        log_failure "V-235832" "(2 of 2) max-file is not explicitly set, unable to fix, jq package not installed."
+        echo "	TIP: add '\"max-file\": 100' to /etc/docker/daemon.json and restart the docker service"
+    fi
+  else 
+  log_succes "V-235832" "(2 of 2) max-file is set."
+  fi
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: grep -Pi '"max-file"\s*:\s*\d+' /etc/docker/daemon.json"
+  echo "Output: $(grep -Pi '"max-file"\s*:\s*\d+' /etc/docker/daemon.json)" 
+  echo "Command: grep -Pi '"max-size"\s*:\s*\d+' /etc/docker/daemon.json"
+  echo "Output: $(grep -Pi '"max-size"\s*:\s*\d+' /etc/docker/daemon.json)" 
+fi
+
+
+if ! (grep --quiet "syslog-address" /etc/docker/daemon.json) ; then
+  jqi '. + {"log-opts": {"syslog-address": "udp://127.0.0.1:25224", "tag": "container_name/{{.Name}}", "syslog-facility": "daemon" }}' /etc/docker/daemon.json
+  log_succes "V-235833" "Script configured docker daemon remote syslog settings"
+else
+    log_succes "V-235833" "Remote syslog already configured"
 fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
   echo "Command: cat $DOCKER_DAEMON_JSON_PATH | grep -i log-driver"

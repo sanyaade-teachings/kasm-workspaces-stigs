@@ -555,6 +555,7 @@ fi
 # Rename nginx config for the share service, if exists
 if [ -f /opt/kasm/current/conf/nginx/services.d/share_api.conf ]; then
   mv /opt/kasm/current/conf/nginx/services.d/share_api.conf /opt/kasm/current/conf/nginx/services.d/share_api.bak
+  mv /opt/kasm/current/conf/nginx/upstream_share.conf /opt/kasm/current/conf/nginx/upstream_share.bak
 fi
 
 # Remove the Kasm_share container from docker compose 

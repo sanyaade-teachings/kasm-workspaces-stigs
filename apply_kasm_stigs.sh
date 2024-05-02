@@ -181,8 +181,10 @@ fi
 # Set pid limits for all containers V-235828
 if ! /opt/kasm/bin/utils/yq_$(uname -m) -e '.services[].pids_limit' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1; then
   /opt/kasm/bin/utils/yq_$(uname -m) -i '.services.[] += {"pids_limit": 100}' /opt/kasm/current/docker/docker-compose.yaml
+  /opt/kasm/bin/utils/yq_$(uname -m) -i '.services.[].deploy.resources.limits += {"pids": 100}' /opt/kasm/current/docker/docker-compose.yaml
   if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_guac' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1; then
     /opt/kasm/bin/utils/yq_$(uname -m) -i '.services.kasm_guac += {"pids_limit": 1000}' /opt/kasm/current/docker/docker-compose.yaml
+    /opt/kasm/bin/utils/yq_$(uname -m) -i '.services.kasm_guac.deploy.resources.limits += {"pids": 1000}' /opt/kasm/current/docker/docker-compose.yaml
   fi
   RESTART_CONTAINERS="true"
   log_succes "V-235828" "pid limit set for all containers"
@@ -550,11 +552,25 @@ if [ ! -z "$SHOW_ARTIFACT" ] ; then
   echo "Output: $(docker ps -q -a | xargs docker inspect --format '{{ .Id }}: User={{ .Config.User }}')"
 fi 
 
+# Rename nginx config for the share service, if exists
+if [ -f /opt/kasm/current/conf/nginx/services.d/share_api.conf ]; then
+  mv /opt/kasm/current/conf/nginx/services.d/share_api.conf /opt/kasm/current/conf/nginx/services.d/share_api.bak
+  mv /opt/kasm/current/conf/nginx/upstream_share.conf /opt/kasm/current/conf/nginx/upstream_share.bak
+fi
+
+# Remove the Kasm_share container from docker compose 
+if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_share' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 ; then
+  RESTART_CONTAINERS="true"
+  /opt/kasm/bin/utils/yq_$(uname -m) eval -i 'del(.services.kasm_share)' /opt/kasm/current/docker/docker-compose.yaml
+  /opt/kasm/bin/utils/yq_$(uname -m) eval -i 'del(.services.proxy.depends_on[] | select(. == "kasm_share"))' /opt/kasm/current/docker/docker-compose.yaml
+fi
+
 #### Restart containers if flagged ####
 if [ "${RESTART_CONTAINERS}" == "true" ]; then
   echo "Restaring containers with new compose changes"
   /opt/kasm/bin/stop
   /opt/kasm/bin/start
+  docker rm $(sudo docker ps -aq --filter "status=exited")
 fi
 
 #### Make sure containers are running with a health check

@@ -57,6 +57,22 @@ NUM_CPUS=$(nproc)
 TOTAL_MEM=$(free -g -h -t | grep "Mem:" | awk '{print $2}')
 MEMORY=$(printf "%.0f" $(echo ${TOTAL_MEM} | cut -d'G' -f1))
 
+#ip check
+read -p "Please verify that $PRI_IP is the IP address that docker should bind to (y/n)? " choice
+    case "$choice" in
+      y|Y )
+        ;;
+      n|N )
+        echo "Cannot continue, manually set the PRI_INTERFACE and PRI_IP variables in the script as desired."
+        exit 1
+        ;;
+      * )
+        echo "Invalid Response"
+        echo "Installation cannot continue"
+        exit 1
+        ;;
+    esac
+
 if [ "${MEMORY}" -ge 4 ]
 then
   let MEMORY=$MEMORY-1
@@ -117,21 +133,6 @@ log_manual() {
     printf "$1, ${CON_ORANGE}MANUAL${CON_NC}, $2\n"
 }
 
-# IP check
-read -p "Please verify that $PRI_IP is the IP address that docker should bind to (y/n)? " choice
-    case "$choice" in
-      y|Y )
-        ;;
-      n|N )
-        echo "Cannot continue, manually set the PRI_INTERFACE and PRI_IP variables in the script as desired."
-        exit 1
-        ;;
-      * )
-        echo "Invalid Response"
-        echo "Installation cannot continue"
-        exit 1
-        ;;
-    esac
 
 # Set cpu and memory limitations for service containers V-235807, V-235806
 if ! /opt/kasm/bin/utils/yq_$(uname -m) -e '.services[].deploy.resources.limits' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1; then
@@ -176,6 +177,20 @@ fi
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
   echo "Command: /opt/kasm/bin/utils/yq_$(uname -m) -e '.services[].security_opt' /opt/kasm/current/docker/docker-compose.yaml "
   echo "Output: $(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services[].security_opt' /opt/kasm/current/docker/docker-compose.yaml)"
+fi
+
+# Bind open ports to host interface V-235820
+if ! [[ "$(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.proxy.ports' /opt/kasm/current/docker/docker-compose.yaml)" == *"${PRI_IP}"*  ]] ; then
+  sudo sed -i "s#8443:443#${PRI_IP}:8443:443#" /opt/kasm/current/docker/docker-compose.yaml
+  sudo docker rm -f kasm_proxy
+  sudo /opt/kasm/bin/start
+  log_succes "V-235820" "Incoming container traffic has been bound to ${PRI_IP}"
+else
+  log_succes "V-235820" "Incoming container traffic has been bound to ${PRI_IP}"
+fi
+if [ ! -z "$SHOW_ARTIFACT" ] ; then
+  echo "Command: docker ps --quiet | xargs docker inspect --format '{{ .Name }}: Ports={{ .NetworkSettings.Ports }}' "
+  echo "Output: $(docker ps --quiet | xargs docker inspect --format '{{ .Name }}: Ports={{ .NetworkSettings.Ports }}' )"
 fi
 
 # Set pid limits for all containers V-235828

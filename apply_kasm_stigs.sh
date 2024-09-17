@@ -56,6 +56,8 @@ KASM_VERSION='current'
 NUM_CPUS=$(nproc)
 TOTAL_MEM=$(free -g -h -t | grep "Mem:" | awk '{print $2}')
 MEMORY=$(printf "%.0f" $(echo ${TOTAL_MEM} | cut -d'G' -f1))
+KASM_UID=$(id kasm -u)
+KASM_GID=$(id kasm -g)
 
 if [ "${MEMORY}" -ge 4 ]
 then
@@ -302,11 +304,7 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_agent' /opt/kasm/curren
   if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_agent.read_only' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1; then
     log_succes "V-235808" "kasm_agent is read only"
   else
-    mkdir -p /opt/kasm/current/tmp/kasm_agent
-    chown -R kasm:kasm /opt/kasm/current/tmp/
-    /opt/kasm/bin/utils/yq_$(uname -m) -i '.services.kasm_agent.volumes += "/opt/kasm/current/tmp/kasm_agent:/tmp" | .services.kasm_agent += {"read_only": true}' /opt/kasm/current/docker/docker-compose.yaml
-    RESTART_CONTAINERS="true"
-    log_succes "V-235808" "kasm_agent is read only"
+    log_failure "V-235808" "kasm_agent is not read only"
   fi
 else
   log_succes "V-235808" "kasm_agent is read only"
@@ -338,11 +336,7 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_api' /opt/kasm/current/
   then
     log_succes "V-235808" "kasm_api is read only"
   else
-    mkdir -p /opt/kasm/current/tmp/kasm_api
-    chown -R kasm:kasm /opt/kasm/current/tmp
-    /opt/kasm/bin/utils/yq_$(uname -m) -i '.services.kasm_api.volumes += "/opt/kasm/current/tmp/kasm_api:/tmp" | .services.kasm_api += {"read_only": true}' /opt/kasm/current/docker/docker-compose.yaml
-    RESTART_CONTAINERS="true"
-    log_succes "V-235808" "kasm_api is read only"
+    log_failure "V-235808" "kasm_api is not read only"
   fi
 else
   log_succes "V-235808" "kasm_api is read only"
@@ -357,11 +351,7 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_manager' /opt/kasm/curr
       echo "Output: $(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_manager.read_only' /opt/kasm/current/docker/docker-compose.yaml)"
     fi
   else
-    mkdir -p /opt/kasm/current/tmp/kasm_manager
-    chown -R kasm:kasm /opt/kasm/current/tmp
-    /opt/kasm/bin/utils/yq_$(uname -m) -i '.services.kasm_manager.volumes += "/opt/kasm/current/tmp/kasm_manager:/tmp" | .services.kasm_manager += {"read_only": true}' /opt/kasm/current/docker/docker-compose.yaml
-    RESTART_CONTAINERS="true"
-    log_succes "V-235808" "kasm_manager is read only"
+    log_failure "V-235808" "kasm_manager is not read only"
   fi
 else
   log_succes "V-235808" "kasm_manager is read only"
@@ -372,11 +362,7 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_share' /opt/kasm/curren
   if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_share.read_only' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1; then
     log_succes "V-235808" "kasm_share is read only"
   else
-    mkdir -p /opt/kasm/current/tmp/kasm_share
-    chown -R kasm:kasm /opt/kasm/current/tmp
-    /opt/kasm/bin/utils/yq_$(uname -m) -i '.services.kasm_share.volumes += "/opt/kasm/current/tmp/kasm_share:/tmp" | .services.kasm_share += {"read_only": true}' /opt/kasm/current/docker/docker-compose.yaml
-    RESTART_CONTAINERS="true"
-    log_succes "V-235808" "kasm_share is read only"
+    log_failure "V-235808" "kasm_share is not read only"
   fi
 else
   log_succes "V-235808" "kasm_share is read only"
@@ -432,28 +418,43 @@ else
   log_succes "V-235808" "kasm_redis is read only"
 fi
 
+# rdp_gateway changes
+if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.rdp_gateway' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 && [ ! -d "/opt/kasm/current/tmp/rdpgw" ]; then
+  if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.rdp_gateway.read_only' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1; then
+    log_succes "V-235808" "rdp_gateway is read only"
+  else
+    log_failure "V-235808" "rdp_gateway is not read only"
+  fi
+else
+  log_succes "V-235808" "rdp_gateway is read only"
+fi
+
+# kasm_rdp_https_gateway changes
+if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_rdp_https_gateway' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 ; then
+  if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_rdp_https_gateway.read_only' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1; then
+    log_succes "V-235808" "kasm_rdp_https_gateway is read only"
+  else
+    log_failure "V-235808" "kasm_rdp_https_gateway is not read only"
+  fi
+else
+  log_succes "V-235808" "kasm_rdp_https_gateway is read only"
+fi
+
+# guac changes
+if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_guac' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 && [ ! -d "/opt/kasm/current/tmp/guac" ]; then
+  if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_guac.read_only' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1; then
+    log_succes "V-235808" "kasm_guac is read only"
+  else
+    log_failure "V-235808" "kasm_guac is not read only"
+  fi
+else
+  log_succes "V-235808" "kasm_guac is read only"
+fi
+
 # Show output of all containers for v-235808
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
   echo "Command:  sudo docker ps --quiet --all | xargs -L 1 sudo docker inspect --format '{{ .Id }}: ReadonlyRootfs={{ .HostConfig.ReadonlyRootfs }}' "
   echo "Output: $(sudo docker ps --quiet --all | xargs -L 1 sudo docker inspect --format '{{ .Id }}: ReadonlyRootfs={{ .HostConfig.ReadonlyRootfs }}')"
-fi
-
-# agent health check
-if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_agent' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 ; then
-    if ! (/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_agent' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 | grep --quiet healthcheck) ; then
-    /opt/kasm/bin/utils/yq_$(uname -m) -i '.services.kasm_agent += {"healthcheck": { "test": "timeout 5 bash -c '\''</dev/tcp/localhost/4444 || exit 1'\'' || exit 1", "timeout": "2s", "retries": 5 }}' /opt/kasm/current/docker/docker-compose.yaml
-    RESTART_CONTAINERS="true"
-    echo 'APPLIED HEATH CHECK agent'
-    fi
-fi
-
-# share health check
-if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_share' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 ; then
-    if ! (/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_share' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 | grep --quiet healthcheck) ; then
-    /opt/kasm/bin/utils/yq_$(uname -m) -i '.services.kasm_share += {"healthcheck": { "test": "timeout 5 bash -c '\''</dev/tcp/localhost/8182 || exit 1'\'' || exit 1", "timeout": "2s", "retries": 5 }}' /opt/kasm/current/docker/docker-compose.yaml
-    RESTART_CONTAINERS="true"
-    echo 'APPLIED HEATH CHECK share'
-    fi
 fi
 
 # proxy health check
@@ -462,15 +463,6 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.proxy' /opt/kasm/current/doc
     /opt/kasm/bin/utils/yq_$(uname -m) -i '.services.proxy += {"healthcheck": { "test": "nginx -t", "timeout": "2s", "retries": 5 }}' /opt/kasm/current/docker/docker-compose.yaml
     RESTART_CONTAINERS="true"
     echo 'APPLIED HEATH CHECK proxy'
-    fi
-fi
-
-# guac health check
-if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_guac' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 ; then
-    if ! (/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_guac' /opt/kasm/current/docker/docker-compose.yaml > /dev/null 2>&1 | grep --quiet healthcheck) ; then
-    /opt/kasm/bin/utils/yq_$(uname -m) -i '.services.kasm_guac += {"healthcheck": { "test": "curl -f http://localhost:3000/__healthcheck --max-time 30 || exit 1", "timeout": "3s", "retries": 5 }}' /opt/kasm/current/docker/docker-compose.yaml
-    RESTART_CONTAINERS="true"
-    echo 'APPLIED HEATH CHECK guac'
     fi
 fi
 
@@ -486,7 +478,8 @@ fi
 # Force user mode on all containers V-235830
 # If the kernel version is < 4.11 and the port to be mapped is 443 we can't update the user 
 # (making the assumption no other port under 1024 is likely to be mapped)
-CONTAINERS_TO_CHANGE=('proxy' 'kasm_share' 'kasm_redis' 'kasm_api' 'kasm_manager' 'kasm_agent' 'kasm_guac' 'db')
+CONTAINERS_TO_CHANGE=('proxy' 'kasm_share' 'kasm_agent' 'db')
+# kasm_api, kasm_guac, kasm_manager, kasm_rdp_gateway, kasm_rdp_https_gateway, and kasm_redis all pass this check without any modifcation.
 for container in ${CONTAINERS_TO_CHANGE[@]}; do
     if [[ $container == 'proxy' && $(/opt/kasm/bin/utils/yq_$(uname -m) '.services.proxy | (. == null)' /opt/kasm/current/docker/docker-compose.yaml) == 'false' && $(kernel_version_greater_than_or_equal "4" "11") -eq 0 && $(/opt/kasm/bin/utils/yq_$(uname -m) '.services.proxy.ports.[] | ( . == "443:443")' /opt/kasm/current/docker/docker-compose.yaml) == 'true' ]]; then
         log_failure "V-235830" "Proxy container cannot be set to run as kasm user ${KUID}. Please update the OS kernel or change the port Kasm proxy listens on"
@@ -567,18 +560,21 @@ fi
 
 #### Restart containers if flagged ####
 if [ "${RESTART_CONTAINERS}" == "true" ]; then
-  echo "Restaring containers with new compose changes"
+  echo "Restarting containers with new compose changes"
   /opt/kasm/bin/stop
   /opt/kasm/bin/start
   docker rm $(sudo docker ps -aq --filter "status=exited")
 fi
 
 #### Make sure containers are running with a health check
-if docker ps | grep -viP --quiet '(\(health|CONTAINER ID)' ; then
-  log_failure 'V-235827' 'Containers found without health checks'
-else
-  log_succes 'V-235827' 'All running containers have health checks'
-fi
+for container_id in $(docker compose --project-directory /opt/kasm/current/docker/ ps -q  2>/dev/null); do
+  container_name=$(docker inspect "$container_id" --format '{{.Name}}' | sed 's/\///')
+  if docker inspect "$container_id" --format '{{ .State.Health.Status }}' > /dev/null 2>&1 ; then
+    log_succes "V-235827" "$container_name has health check"
+  else
+    log_failure "V-235827" "$container_name is missing health check"
+  fi
+done
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
   echo "Command:  docker ps | grep -viP '(\(health|CONTAINER ID)' "
   echo "Output: $(docker ps | grep -viP '(\(health|CONTAINER ID)')"

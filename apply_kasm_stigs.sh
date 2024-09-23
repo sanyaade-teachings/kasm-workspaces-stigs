@@ -571,7 +571,6 @@ if [ "${RESTART_CONTAINERS}" == "true" ]; then
   echo "Restarting containers with new compose changes"
   /opt/kasm/bin/stop
   /opt/kasm/bin/start
-  docker rm $(sudo docker ps -aq --filter "status=exited")
 fi
 
 #### Make sure containers are running with a health check

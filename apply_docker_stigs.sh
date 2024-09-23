@@ -348,7 +348,7 @@ if [ ! -z "$SHOW_ARTIFACT" ] ; then
    echo "Output: $(grep -Pi '"ip"\s*:\s*"[^0]' /etc/docker/daemon.json)"
 fi
 
-if docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: AppArmorProfile={{ .AppArmorProfile }}' | grep -i "AppArmorProfile=unconfined" ; then
+if docker ps --quiet --all | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: AppArmorProfile={{ .AppArmorProfile }}' | grep -i "AppArmorProfile=unconfined" ; then
   log_failure 'V-235799' 'containers present running without apparmor'
 else
   log_succes 'V-235799' 'all containers running with apparmor profiles'
@@ -360,18 +360,18 @@ fi
 
 log_manual 'V-235837' 'review below ports and ensure they are in the SSP, look at the HostPort field.'
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps -q | xargs docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort "
-  echo "Output: $(docker ps -q | xargs docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort) " 
+  echo "Command: docker ps -q | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort | cat "
+  echo "Output: $(docker ps -q | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort | cat) "
 else
-  docker ps -q | xargs docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort
+  docker ps -q | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort | cat
 fi
 
 log_manual 'V-235804' 'review below ports and ensure they are in the SSP, look at the HostPort field.'
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host"
-  echo "Output: $(docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host) " 
+  echo "Command: docker ps --quiet | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host | cat"
+  echo "Output: $(docker ps --quiet | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host | cat) "
 else
-  docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host
+  docker ps --quiet | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host | cat
 fi
 
 

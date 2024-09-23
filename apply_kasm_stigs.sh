@@ -561,6 +561,9 @@ if /opt/kasm/bin/utils/yq_$(uname -m) -e '.services.kasm_share' /opt/kasm/curren
   RESTART_CONTAINERS="true"
   /opt/kasm/bin/utils/yq_$(uname -m) eval -i 'del(.services.kasm_share)' /opt/kasm/current/docker/docker-compose.yaml
   /opt/kasm/bin/utils/yq_$(uname -m) eval -i 'del(.services.proxy.depends_on[] | select(. == "kasm_share"))' /opt/kasm/current/docker/docker-compose.yaml
+  if docker container inspect kasm_share > /dev/null 2>&1 ; then 
+    docker container rm -f kasm_share
+  fi
 fi
 
 #### Restart containers if flagged ####

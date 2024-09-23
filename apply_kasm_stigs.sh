@@ -54,6 +54,7 @@ CON_NC='\033[0m' # No Color
 KUID=$(id -u kasm)
 KASM_VERSION='current'
 NUM_CPUS=$(nproc)
+CPU_LIMIT=4
 TOTAL_MEM=$(free -g -h -t | grep "Mem:" | awk '{print $2}')
 MEMORY=$(printf "%.0f" $(echo ${TOTAL_MEM} | cut -d'G' -f1))
 KASM_UID=$(id kasm -u)
@@ -141,7 +142,11 @@ if ! /opt/kasm/bin/utils/yq_$(uname -m) -e '.services[].deploy.resources.limits'
     if [[ "${key}" =~ db ]]; then
       /opt/kasm/bin/utils/yq_$(uname -m) -i '.services."'"${key}"'" += {"deploy": {"resources": {"limits": {"cpus": "'"${NUM_CPUS}"'", "memory": "'"${MEMORY}"'G"}}}}' /opt/kasm/current/docker/docker-compose.yaml
     else
-      /opt/kasm/bin/utils/yq_$(uname -m) -i '.services."'"${key}"'" += {"deploy": {"resources": {"limits": {"cpus": "4", "memory": "2G"}}}}' /opt/kasm/current/docker/docker-compose.yaml
+      if [ "$CPU_LIMIT" -gt "$NUM_CPUS" ]; then
+        /opt/kasm/bin/utils/yq_$(uname -m) -i '.services."'"${key}"'" += {"deploy": {"resources": {"limits": {"cpus": "'"${NUM_CPUS}"'", "memory": "2G"}}}}' /opt/kasm/current/docker/docker-compose.yaml
+      else
+        /opt/kasm/bin/utils/yq_$(uname -m) -i '.services."'"${key}"'" += {"deploy": {"resources": {"limits": {"cpus": "'"${CPU_LIMIT}"'", "memory": "2G"}}}}' /opt/kasm/current/docker/docker-compose.yaml
+      fi
     fi
   done
   RESTART_CONTAINERS="true"

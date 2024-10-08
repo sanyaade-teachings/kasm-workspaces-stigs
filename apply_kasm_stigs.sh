@@ -188,9 +188,9 @@ fi
 
 # Bind open ports to host interface V-235820
 
-if ! [[ "$(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.proxy.ports' /opt/kasm/current/docker/docker-compose.yaml)" == *"${PRI_IP}"*  ]] ; then
-  PORTS="$(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.proxy.ports' /opt/kasm/current/docker/docker-compose.yaml | sed 's/^.*"\([0-9:]*\)".*$/\1/')"
-  sudo sed -i "s#${PORTS}#${PRI_IP}:${PORTS}#" /opt/kasm/current/docker/docker-compose.yaml
+if ! [[ "$(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.proxy.ports[0]' /opt/kasm/current/docker/docker-compose.yaml)" == *"${PRI_IP}"*  ]] ; then
+  PORTS="$(/opt/kasm/bin/utils/yq_$(uname -m) -e '.services.proxy.ports[0]' /opt/kasm/current/docker/docker-compose.yaml | grep -Po '\d+:\d+$')"
+  /opt/kasm/bin/utils/yq_$(uname -m) -i ".services.proxy.ports[0] = \"${PRI_IP}:${PORTS}\"" /opt/kasm/current/docker/docker-compose.yaml
   sudo docker rm -f kasm_proxy
   sudo /opt/kasm/bin/start
   log_succes "V-235820" "Incoming container traffic has been bound to ${PRI_IP}"

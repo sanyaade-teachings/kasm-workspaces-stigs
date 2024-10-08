@@ -348,7 +348,7 @@ if [ ! -z "$SHOW_ARTIFACT" ] ; then
    echo "Output: $(grep -Pi '"ip"\s*:\s*"[^0]' /etc/docker/daemon.json)"
 fi
 
-if docker ps --quiet --all | xargs docker inspect --format '{{ .Id }}: AppArmorProfile={{ .AppArmorProfile }}' | grep -i "AppArmorProfile=unconfined" ; then
+if docker ps --quiet --all | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: AppArmorProfile={{ .AppArmorProfile }}' | grep -i "AppArmorProfile=unconfined" ; then
   log_failure 'V-235799' 'containers present running without apparmor'
 else
   log_succes 'V-235799' 'all containers running with apparmor profiles'
@@ -360,18 +360,18 @@ fi
 
 log_manual 'V-235837' 'review below ports and ensure they are in the SSP, look at the HostPort field.'
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps -q | xargs docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort "
-  echo "Output: $(docker ps -q | xargs docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort) " 
+  echo "Command: docker ps -q | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort | cat "
+  echo "Output: $(docker ps -q | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort | cat) "
 else
-  docker ps -q | xargs docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort
+  docker ps -q | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: {{ .Name }}: Ports={{ .NetworkSettings.Ports }}' | grep HostPort | cat
 fi
 
 log_manual 'V-235804' 'review below ports and ensure they are in the SSP, look at the HostPort field.'
 if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host"
-  echo "Output: $(docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host) " 
+  echo "Command: docker ps --quiet | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host | cat"
+  echo "Output: $(docker ps --quiet | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host | cat) "
 else
-  docker ps --quiet | xargs docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host
+  docker ps --quiet | xargs --no-run-if-empty docker inspect --format '{{ .Id }}: Ports={{ .NetworkSettings.Ports }}' | grep -i host | cat
 fi
 
 
@@ -566,40 +566,6 @@ if [ ! -z "$SHOW_ARTIFACT" ] ; then
   echo "Command: cat $DOCKER_DAEMON_JSON_PATH | grep -i log-driver"
   echo "Output: $(cat $DOCKER_DAEMON_JSON_PATH | grep -i log-driver)" 
 fi
-
-if [ $(sudo jq -r '."log-opts"."max-size"' /etc/docker/daemon.json) != 'null' ] && [ $(sudo jq -r '."log-opts"."max-file"' /etc/docker/daemon.json) != 'null' ] ; then
-  log_succes "V-235832" "max-size and max-file are set."
-else
-  if  [ $(sudo jq -r '."log-opts"."max-size"' /etc/docker/daemon.json) == 'null' ] ; then
-    if which jq ; then
-        cat <<< $(sudo jq '."log-opts" |= . + {"max-size": "50m"}' /etc/docker/daemon.json) > /etc/docker/daemon.json
-        log_succes "V-235832" "(1 of 2) max-size has been set by this script, be sure to restart the docker service."
-    else
-        log_failure "V-235832" "(1 of 2) max-size is not explicitly set, unable to fix, jq package not installed."
-        echo "	TIP: add '\"max-size\": "50m"' to /etc/docker/daemon.json and restart the docker service"
-    fi
-  else
-    log_succes "V-235832" "(1 of 2) max-size is set."
-  fi
-  if [ $(sudo jq -r '."log-opts"."max-file"' /etc/docker/daemon.json) == 'null' ] ; then
-    if which jq ; then
-        cat <<< $(sudo jq '."log-opts" |= . + {"max-file": 10}' /etc/docker/daemon.json) > /etc/docker/daemon.json
-        log_succes "V-235832" "(2 of 2) max-file has been set by this script, be sure to restart the docker service."
-    else
-        log_failure "V-235832" "(2 of 2) max-file is not explicitly set, unable to fix, jq package not installed."
-        echo "	TIP: add '\"max-file\": 10' to /etc/docker/daemon.json and restart the docker service"
-    fi
-  else 
-  log_succes "V-235832" "(2 of 2) max-file is set."
-  fi
-fi
-if [ ! -z "$SHOW_ARTIFACT" ] ; then
-  echo "Command: grep -Pi '"max-file"\s*:' /etc/docker/daemon.json"
-  echo "Output: $(grep -Pi '"max-file"\s*:' /etc/docker/daemon.json)" 
-  echo "Command: grep -Pi '"max-size"\s*:' /etc/docker/daemon.json"
-  echo "Output: $(grep -Pi '"max-size"\s*:' /etc/docker/daemon.json)" 
-fi
-
 
 if ! (grep --quiet "syslog-address" /etc/docker/daemon.json) ; then
   jqi '. + {"log-opts": {"syslog-address": "udp://127.0.0.1:25224", "tag": "container_name/{{.Name}}", "syslog-facility": "daemon" }}' /etc/docker/daemon.json
